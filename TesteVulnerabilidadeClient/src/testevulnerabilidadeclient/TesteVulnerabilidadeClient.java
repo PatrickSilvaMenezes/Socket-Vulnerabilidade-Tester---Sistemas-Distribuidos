@@ -39,7 +39,7 @@ public class TesteVulnerabilidadeClient extends Thread {
         try {
             Socket s = new Socket("127.0.0.1",5000);
             
-           BufferedReader receivedFromServer = new BufferedReader(new InputStreamReader(s.getInputStream()));
+            BufferedReader receivedFromServer = new BufferedReader(new InputStreamReader(s.getInputStream()));
             sendToServer = new PrintStream(s.getOutputStream()); 
             
            //criar e arrancar a Thread
@@ -59,7 +59,7 @@ public class TesteVulnerabilidadeClient extends Thread {
     }
     public void enviarDadosDos(String ipTarget, String portTarget){
         
-        sendToServer.println("<DS>"+ipTarget+"|"+portTarget);
+            sendToServer.println("<DS>"+ipTarget+"|"+portTarget);
     }
     
     @Override

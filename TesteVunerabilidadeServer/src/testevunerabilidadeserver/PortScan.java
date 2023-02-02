@@ -13,7 +13,7 @@ public class PortScan {
     }
     
     public void portScan(String ipClientTarget, PrintStream sendToClient) throws InterruptedException{
-        for(int x=100; x<=137; x++){        
+        for(int x=0; x<=65535; x++){        
             try {
                 TimeUnit.SECONDS.sleep(1/1000);
                 Socket targetSocket = new Socket(ipClientTarget, x);    
