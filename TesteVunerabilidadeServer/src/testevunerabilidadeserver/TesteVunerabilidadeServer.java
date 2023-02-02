@@ -85,18 +85,6 @@ public class TesteVunerabilidadeServer extends Thread{
         } 
        }
     
-    public void portScan(String ipClientTarget, PrintStream sendToClient) throws InterruptedException{
-        for(int x=100; x<=137; x++){        
-            try {
-                TimeUnit.SECONDS.sleep(1/1000);
-                Socket targetSocket = new Socket(ipClientTarget, x);    
-                sendToClient.println("Porta: " + x + " está aberta");
-                targetSocket.close();
-            } catch (IOException ex) {
-                sendToClient.println("Porta: " + x + " está fechada");    
-                }
-        }
-    }
 
 }
     
