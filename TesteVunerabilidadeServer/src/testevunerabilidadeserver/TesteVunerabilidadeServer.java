@@ -75,19 +75,16 @@ public class TesteVunerabilidadeServer extends Thread{
             }
             else if(testType.equalsIgnoreCase("<DS>"))
             {
+                AttackDos attack = new AttackDos();
                 String ipTarget = dataFromClient.substring(dataFromClient.indexOf(">")+1,dataFromClient.indexOf("|"));
                 
                 String portTarget = dataFromClient.substring(dataFromClient.indexOf("|")+1,dataFromClient.length());
                 System.out.println("portTarget"+portTarget);
                 
-                
-                try{
-                attackDos(ipTarget,portTarget,clientSender);
-                 }catch (InterruptedException ex) {
-                Logger.getLogger(TesteVunerabilidadeServer.class.getName()).log(Level.SEVERE, null, ex);
+               attack.dosAttack(ipTarget, portTarget, clientSender);
             }
             
-            }
+            
     
             clientReceiver.close();
             clientSender.close();
@@ -95,7 +92,7 @@ public class TesteVunerabilidadeServer extends Thread{
         } 
              
         catch (IOException ex) {
-            Logger.getLogger(TesteVunerabilidadeServer.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("Teste de vulnerabilidade não correu bem!");
         } 
        }
     
